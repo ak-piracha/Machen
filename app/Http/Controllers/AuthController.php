@@ -20,7 +20,7 @@ class AuthController extends Controller
         $request->validated($request->all());
 
         //Credentials check
-        if (!Auth::attempt($request->only(['email', 'password']))) {
+        if (!$token = auth()->attempt($request->only(['email', 'password']))) {
             return $this->error('', 'Credentials do not match', 401);
         }
 
@@ -29,7 +29,8 @@ class AuthController extends Controller
         //Success message
         return $this->success([
             'user' => $user,
-            'token' => $user->createToken('API Token of ' . $user->name)->plainTextToken,
+            'access_token' => $token,
+            'token_type' => 'bearer',
         ]);
     }
 
@@ -48,7 +49,6 @@ class AuthController extends Controller
         //Success message
         return $this->success([
             'user' => $user,
-            'token' => $user->createToken('API Token of ' . $user->name)->plainTextToken,
         ]);
     }
 
@@ -56,7 +56,7 @@ class AuthController extends Controller
     public function logout()
     {
         //Deleting User Sanctum Access Token
-        Auth::user()->currentAccessToken()->delete();
+        Auth::logout();
 
         return $this->success([
             'message' => 'You are Logout...',
